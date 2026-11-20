@@ -58,7 +58,10 @@ function mediaspeler_add_instance($data, $mform = null) {
     $data->timecreated = time();
     $data->timemodified = $data->timecreated;
 
-    return $DB->insert_record('mediaspeler', $data);
+    $data->id = $DB->insert_record('mediaspeler', $data);
+    mediaspeler_try_sync($data);
+
+    return $data->id;
 }
 
 /**
@@ -75,7 +78,27 @@ function mediaspeler_update_instance($data, $mform = null) {
     $data->ncfolder = mediaspeler_clean_folder($data->ncfolder ?? '');
     $data->timemodified = time();
 
-    return $DB->update_record('mediaspeler', $data);
+    $DB->update_record('mediaspeler', $data);
+    mediaspeler_try_sync($DB->get_record('mediaspeler', ['id' => $data->id]));
+
+    return true;
+}
+
+/**
+ * Synchronises the items with Nextcloud, without blocking the save when Nextcloud is unreachable.
+ *
+ * Problems are shown to the teacher when the activity is opened (view.php syncs again).
+ *
+ * @param stdClass $mediaspeler The activity record.
+ * @return array|null Counts from item_sync::sync(), or null when the sync failed.
+ */
+function mediaspeler_try_sync(stdClass $mediaspeler): ?array {
+    try {
+        return \mod_mediaspeler\local\item_sync::sync($mediaspeler);
+    } catch (moodle_exception $e) {
+        debugging('mod_mediaspeler: sync failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        return null;
+    }
 }
 
 /**

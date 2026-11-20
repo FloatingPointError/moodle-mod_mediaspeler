@@ -4,7 +4,7 @@ Moodle-activiteit die audio uit een map in Nextcloud afspeelt als oefenreeks voo
 
 - **Moodle:** 5.2 (PHP 8.3 of 8.4)
 - **Nextcloud:** 34, via WebDAV met één serviceaccount
-- **Status:** fase 1, skelet. De activiteit kan aan een cursus worden toegevoegd; de koppeling met Nextcloud volgt in fase 3.
+- **Status:** fase 3. De activiteit leest een Nextcloud-map uit en toont de audiobestanden als lijst; afspelen volgt in fase 4.
 
 ## Installeren op de test-VM
 
@@ -17,6 +17,26 @@ sudo -u www-data php8.3 admin/cli/upgrade.php
 ```
 
 Of ga als beheerder naar Site-beheer → Meldingen.
+
+## Koppeling met Nextcloud instellen
+
+Ga naar Site-beheer → Plugins → Activiteitsmodules → Mediaspeler en vul in:
+
+| Instelling | Waarde op de test-VM |
+| --- | --- |
+| Adres van Nextcloud | `http://localhost:8080` |
+| Serviceaccount | `moodle-mediaspeler` |
+| App-wachtwoord | het app-wachtwoord uit Nextcloud |
+
+Controleer de koppeling vanaf de commandoregel, vanuit `/var/www/moodle`:
+
+```bash
+sudo -u www-data php8.3 public/mod/mediaspeler/cli/test_connection.php --folder=Muzieklab-test
+```
+
+Het script toont de bestanden in de map, met "audio" bij de bestanden die de mediaspeler gebruikt.
+
+Een leerkracht die de activiteit opent, werkt de lijst automatisch bij vanuit Nextcloud. Nieuwe bestanden komen achteraan de reeks; verwijderde bestanden verdwijnen uit de lijst.
 
 ## Licentie
 

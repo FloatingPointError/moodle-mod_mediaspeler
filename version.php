@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_mediaspeler';
-$plugin->version   = 2026112000;      // YYYYMMDDXX.
+$plugin->version   = 2026112001;      // YYYYMMDDXX.
 $plugin->requires  = 2026042000;      // Moodle 5.2.0.
 $plugin->supported = [502, 502];      // Tested on Moodle 5.2 only for now.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0 (fase 1: skelet)';
+$plugin->release   = '0.2.0 (fase 3: koppeling met Nextcloud)';

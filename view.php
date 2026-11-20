@@ -45,11 +45,29 @@ $PAGE->add_body_class('limitedwidth');
 
 echo $OUTPUT->header();
 
-// Fase 1: nog geen koppeling met Nextcloud. We tonen alleen de ingestelde map.
-echo $OUTPUT->notification(
-    get_string('notyetconnected', 'mediaspeler', s($mediaspeler->ncfolder)),
-    \core\output\notification::NOTIFY_INFO,
-    false
-);
+// Teachers bring the list in line with Nextcloud each time they open the activity (UC9).
+if (has_capability('mod/mediaspeler:manageitems', $context)) {
+    try {
+        $counts = \mod_mediaspeler\local\item_sync::sync($mediaspeler);
+        if ($counts['added'] || $counts['updated'] || $counts['removed']) {
+            echo $OUTPUT->notification(get_string('syncdone', 'mediaspeler', (object) $counts),
+                \core\output\notification::NOTIFY_SUCCESS, false);
+        }
+    } catch (moodle_exception $e) {
+        echo $OUTPUT->notification(get_string('syncfailed', 'mediaspeler', $e->getMessage()),
+            \core\output\notification::NOTIFY_ERROR, false);
+    }
+    echo html_writer::tag('p', get_string('sourcefolder', 'mediaspeler', s($mediaspeler->ncfolder)),
+        ['class' => 'text-muted']);
+}
+
+$items = $DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->id], 'sortorder ASC');
+if (!$items) {
+    echo $OUTPUT->notification(get_string('noitems', 'mediaspeler'), \core\output\notification::NOTIFY_INFO, false);
+} else {
+    // Fase 3: only the list. Playback through Moodle follows in fase 4.
+    $list = array_map(fn($item) => html_writer::tag('li', format_string($item->title)), $items);
+    echo html_writer::tag('ol', implode('', $list), ['class' => 'mod-mediaspeler-items']);
+}
 
 echo $OUTPUT->footer();
