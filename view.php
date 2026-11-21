@@ -65,8 +65,18 @@ $items = $DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->
 if (!$items) {
     echo $OUTPUT->notification(get_string('noitems', 'mediaspeler'), \core\output\notification::NOTIFY_INFO, false);
 } else {
-    // Fase 3: only the list. Playback through Moodle follows in fase 4.
-    $list = array_map(fn($item) => html_writer::tag('li', format_string($item->title)), $items);
+    // Fase 4: a plain audio element per item; the real player comes in fase 5.
+    $list = [];
+    foreach ($items as $item) {
+        $src = new moodle_url('/mod/mediaspeler/stream.php', ['id' => $cm->id, 'item' => $item->id]);
+        $audio = html_writer::tag('audio', '', [
+            'controls' => 'controls',
+            'preload' => 'none',
+            'src' => $src->out(false),
+            'class' => 'd-block w-100 mt-1',
+        ]);
+        $list[] = html_writer::tag('li', format_string($item->title) . $audio, ['class' => 'mb-3']);
+    }
     echo html_writer::tag('ol', implode('', $list), ['class' => 'mod-mediaspeler-items']);
 }
 

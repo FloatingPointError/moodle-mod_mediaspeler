@@ -109,6 +109,25 @@ class item_sync {
     }
 
     /**
+     * MIME type to send to the browser, based on the file extension.
+     *
+     * Nextcloud sometimes reports flac or opus as application/octet-stream, which browsers will not play.
+     *
+     * @param string $path File path or name.
+     * @return string
+     */
+    public static function audio_mimetype(string $path): string {
+        return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'flac' => 'audio/flac',
+            'm4a' => 'audio/mp4',
+            'ogg', 'oga', 'opus' => 'audio/ogg',
+            default => 'application/octet-stream',
+        };
+    }
+
+    /**
      * Default title for a new item: the file name without extension, underscores as spaces.
      *
      * @param string $name File name.

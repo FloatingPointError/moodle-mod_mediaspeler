@@ -100,6 +100,72 @@ class nextcloud_client {
     }
 
     /**
+     * Fetches a file (or part of it) from Nextcloud and hands it over chunk by chunk, without storing it.
+     *
+     * Uses PHP's curl functions directly, because Moodle's curl class buffers the whole response.
+     * The same reasoning as in request() applies to bypassing Moodle's curl security.
+     *
+     * @param string $path File path relative to the service account's root.
+     * @param string|null $range A validated Range header value, e.g. "bytes=0-1023", or null.
+     * @param callable $onheaders Called once before the first byte: fn(int $status, array $headers).
+     *                            Header names are lower case.
+     * @param callable $onchunk Called for every chunk: fn(string $data): bool. Return false to stop.
+     * @return int The HTTP status Nextcloud answered with.
+     * @throws moodle_exception When Nextcloud cannot be reached.
+     */
+    public function stream(string $path, ?string $range, callable $onheaders, callable $onchunk): int {
+        $status = 0;
+        $headers = [];
+        $headerssent = false;
+        $sendheaders = function () use (&$status, &$headers, &$headerssent, $onheaders) {
+            if (!$headerssent) {
+                $headerssent = true;
+                $onheaders($status, $headers);
+            }
+        };
+
+        $ch = curl_init($this->dav_url($path));
+        $requestheaders = $range === null ? [] : ['Range: ' . $range];
+        curl_setopt_array($ch, [
+            CURLOPT_HTTPGET => true,
+            CURLOPT_HTTPHEADER => $requestheaders,
+            CURLOPT_USERPWD => $this->username . ':' . $this->password,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_LOW_SPEED_LIMIT => 1,     // Give up when Nextcloud sends nothing for 30 seconds.
+            CURLOPT_LOW_SPEED_TIME => 30,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_HEADERFUNCTION => function ($ch, string $line) use (&$status, &$headers) {
+                if (preg_match('~^HTTP/\S+\s+(\d{3})~', $line, $matches)) {
+                    $status = (int) $matches[1];
+                    $headers = [];
+                } else if (str_contains($line, ':')) {
+                    [$name, $value] = explode(':', $line, 2);
+                    $headers[strtolower(trim($name))] = trim($value);
+                }
+                return strlen($line);
+            },
+            CURLOPT_WRITEFUNCTION => function ($ch, string $data) use ($sendheaders, $onchunk) {
+                $sendheaders();
+                return $onchunk($data) ? strlen($data) : 0;
+            },
+        ]);
+
+        $ok = curl_exec($ch);
+        $errno = curl_errno($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if (!$ok && $errno !== CURLE_WRITE_ERROR) {
+            if ($status === 0) {
+                throw new moodle_exception('connectionerror', 'mediaspeler', '', $error);
+            }
+        }
+        $sendheaders(); // For responses without a body, such as 416.
+        return $status;
+    }
+
+    /**
      * Sends a WebDAV request with Moodle's curl class.
      *
      * The URL comes from a site setting only an administrator can change. Nextcloud usually runs on
