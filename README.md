@@ -4,7 +4,7 @@ Moodle-activiteit die audio uit een map in Nextcloud afspeelt als oefenreeks voo
 
 - **Moodle:** 5.2 (PHP 8.3 of 8.4)
 - **Nextcloud:** 34, via WebDAV met één serviceaccount
-- **Status:** fase 4. De activiteit leest een Nextcloud-map uit en speelt de audiobestanden af via Moodle, met spoelen. De echte speler (tempo, loop) volgt in fase 5.
+- **Status:** fase 4. De activiteit leest een Nextcloud-map uit en speelt de audiobestanden af via Moodle, met spoelen. De speler voor de oefenreeks volgt in fase 5.
 
 ## Installeren op de test-VM
 
