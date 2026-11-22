@@ -36,9 +36,10 @@ class listening {
      *
      * @param \stdClass $item The item record.
      * @param int $userid The user.
+     * @param int $sharedby The groupmate who was logged in while listening together (UC16); 0 if none.
      * @return bool True when this call added the record.
      */
-    public static function mark(\stdClass $item, int $userid): bool {
+    public static function mark(\stdClass $item, int $userid, int $sharedby = 0): bool {
         global $DB;
 
         $conditions = ['itemid' => $item->id, 'userid' => $userid];
@@ -50,6 +51,7 @@ class listening {
                 'mediaspelerid' => $item->mediaspelerid,
                 'itemid' => $item->id,
                 'userid' => $userid,
+                'sharedby' => $sharedby,
                 'timecreated' => time(),
             ]);
         } catch (\dml_write_exception $e) {
@@ -60,6 +62,42 @@ class listening {
             throw $e;
         }
         return true;
+    }
+
+    /**
+     * Groupmates who listened together with a user (UC16).
+     *
+     * When the activity has a grouping of collaboration groups (for example duos), everyone in the
+     * user's group(s) of that grouping counts as having listened too. Only enrolled members who may
+     * view the activity and for whom the item is meant are returned.
+     *
+     * @param \stdClass $mediaspeler The activity record.
+     * @param \stdClass|\cm_info $cm The course module.
+     * @param \stdClass $item The item.
+     * @param int $userid The user who is logged in.
+     * @return int[] User ids of the groupmates, without the user himself.
+     */
+    public static function groupmates(\stdClass $mediaspeler, $cm, \stdClass $item, int $userid): array {
+        $groupingid = (int) ($mediaspeler->collabgroupingid ?? 0);
+        if (!$groupingid) {
+            return [];
+        }
+        $context = \context_module::instance($cm->id);
+        $groups = groups_get_user_groups((int) $cm->course, $userid, true)[$groupingid] ?? [];
+        $mates = [];
+        foreach ($groups as $groupid) {
+            foreach (groups_get_members($groupid, 'u.id') as $member) {
+                $mateid = (int) $member->id;
+                if ($mateid === $userid || isset($mates[$mateid])) {
+                    continue;
+                }
+                if (is_enrolled($context, $mateid, 'mod/mediaspeler:view', true)
+                        && visibility::item_visible($item, $cm, $mateid)) {
+                    $mates[$mateid] = $mateid;
+                }
+            }
+        }
+        return array_values($mates);
     }
 
     /**

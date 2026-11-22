@@ -28,6 +28,7 @@
 
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import {getString} from 'core/str';
 
 /** Largest step between two timeupdate events that still counts as continuous playing, in seconds. */
 const MAX_STEP = 2;
@@ -228,10 +229,22 @@ class Player {
         Promise.resolve(Ajax.call([{
             methodname: 'mod_mediaspeler_mark_listened',
             args: {cmid: this.cmid, itemid: itemid},
-        }])[0]).then(() => {
+        }])[0]).then((result) => {
             element.dataset.listened = '1';
-            element.querySelector('[data-region="listened"]').hidden = false;
+            const badge = element.querySelector('[data-region="listened"]');
+            badge.hidden = false;
             this.showProgress();
+            if (result.groupmates > 0) {
+                // UC16: tell the student it counted for the groupmates too.
+                return getString('listenedtogether', 'mod_mediaspeler', result.groupmates).then((text) => {
+                    const note = document.createElement('span');
+                    note.className = 'visually-hidden-focusable d-block small fw-normal';
+                    note.textContent = text;
+                    badge.title = text;
+                    badge.append(note);
+                    return null;
+                });
+            }
             return null;
         }).catch(Notification.exception).finally(() => {
             this.pending.delete(itemid);

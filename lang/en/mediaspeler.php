@@ -25,6 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['autherror'] = 'Nextcloud refused the login. Check the username and app password of the service account.';
+$string['collabgrouping'] = 'Listening together';
+$string['collabgrouping_help'] = 'Choose the grouping with the groups in which students work together, for example duos made with Group choice. When one student of a group has heard an item, it counts as listened to for the other members of that group as well. Choose "No" when every student listens alone.';
+$string['collabgrouping_none'] = 'No, every student listens alone';
 $string['completiondetail:listenall'] = 'Listen to every item (at least 75% of each)';
 $string['completionlistenall'] = 'Students must listen to every item (at least 75% of each)';
 $string['completionlistenall_help'] = 'An item counts as listened to once the student has heard at least 75% of it. Only stretches that really played count: skipping ahead does not. The order is free.';
@@ -45,6 +48,7 @@ $string['itemssaved'] = 'The items have been saved.';
 $string['itemtitle'] = 'Title';
 $string['listened'] = 'Listened';
 $string['listenedshare'] = 'Share of this item you have heard';
+$string['listenedtogether'] = 'Also counted for {$a} groupmate(s)';
 $string['manageitems'] = 'Manage items';
 $string['manageitems_intro'] = 'Set the title, explanation and position of every audio file. New files in the Nextcloud folder are added at the end automatically.';
 $string['mediaspeler:addinstance'] = 'Add a new media player';
@@ -71,6 +75,7 @@ $string['pluginadministration'] = 'Media player administration';
 $string['pluginname'] = 'Media player';
 $string['privacy:metadata:mediaspeler_listened'] = 'Which items a user has listened to, for activity completion.';
 $string['privacy:metadata:mediaspeler_listened:itemid'] = 'The item that was listened to.';
+$string['privacy:metadata:mediaspeler_listened:sharedby'] = 'The groupmate who was logged in when the item was listened to together.';
 $string['privacy:metadata:mediaspeler_listened:timecreated'] = 'When the user had heard enough of the item.';
 $string['privacy:metadata:mediaspeler_listened:userid'] = 'The user who listened.';
 $string['privacy:metadata:nextcloud'] = 'The audio is fetched from Nextcloud with a shared service account. No data about the user is sent to Nextcloud.';

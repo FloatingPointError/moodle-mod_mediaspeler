@@ -54,6 +54,10 @@ De lijst wordt bijgewerkt vanuit Nextcloud door de geplande taak *Mediaspelers b
 - Voltooiing telt alleen de items die voor de leerling bedoeld zijn. Wordt de leerling uit een groep gehaald of verandert de leerkracht de groepen, dan wordt de voltooiing opnieuw bekeken. Een voltooiing wordt nooit teruggedraaid, ook niet als er later een track bijkomt.
 - Wordt een groep verwijderd, dan verdwijnt ze ook bij de items. Een item zonder overgebleven groepen is weer voor iedereen.
 
+## Samen luisteren (UC16)
+
+Leerlingen werken soms samen, terwijl maar één van hen aangemeld is. Kies dan in de instellingen van de activiteit bij **Samen luisteren** de groepering met de samenwerkgroepen, bijvoorbeeld de duo's die je met Groepskeuze laat vormen (zet die groepen in één groepering). Heeft één leerling van een groep een item gehoord, dan telt het ook voor de andere leden van die groep, als het item voor hen bedoeld is. Bij de groepsgenoot wordt bewaard wie aangemeld was. Dit staat los van de groepen per instrument.
+
 ## JavaScript
 
 De gebouwde versie van de speler staat in `amd/build`, dus Node.js is niet nodig om de plugin te gebruiken. Pas je `amd/src/player.js` aan, bouw dan opnieuw vanuit de hoofdmap van Moodle:

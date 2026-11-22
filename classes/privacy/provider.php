@@ -49,6 +49,7 @@ class provider implements
         $collection->add_database_table('mediaspeler_listened', [
             'itemid' => 'privacy:metadata:mediaspeler_listened:itemid',
             'userid' => 'privacy:metadata:mediaspeler_listened:userid',
+            'sharedby' => 'privacy:metadata:mediaspeler_listened:sharedby',
             'timecreated' => 'privacy:metadata:mediaspeler_listened:timecreated',
         ], 'privacy:metadata:mediaspeler_listened');
         $collection->add_external_location_link('nextcloud', [], 'privacy:metadata:nextcloud');
@@ -67,12 +68,13 @@ class provider implements
                   JOIN {course_modules} cm ON cm.instance = l.mediaspelerid
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
                   JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
-                 WHERE l.userid = :userid";
+                 WHERE l.userid = :userid OR l.sharedby = :sharedby";
         $contextlist = new contextlist();
         $contextlist->add_from_sql($sql, [
             'modname' => 'mediaspeler',
             'contextlevel' => CONTEXT_MODULE,
             'userid' => $userid,
+            'sharedby' => $userid,
         ]);
         return $contextlist;
     }
@@ -87,12 +89,14 @@ class provider implements
         if (!$context instanceof \context_module) {
             return;
         }
-        $sql = "SELECT l.userid
-                  FROM {mediaspeler_listened} l
-                  JOIN {course_modules} cm ON cm.instance = l.mediaspelerid
-                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                 WHERE cm.id = :cmid";
-        $userlist->add_from_sql('userid', $sql, ['modname' => 'mediaspeler', 'cmid' => $context->instanceid]);
+        foreach (['userid', 'sharedby'] as $field) {
+            $sql = "SELECT l.$field
+                      FROM {mediaspeler_listened} l
+                      JOIN {course_modules} cm ON cm.instance = l.mediaspelerid
+                      JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                     WHERE cm.id = :cmid AND l.$field > 0";
+            $userlist->add_from_sql($field, $sql, ['modname' => 'mediaspeler', 'cmid' => $context->instanceid]);
+        }
     }
 
     /**
@@ -113,7 +117,7 @@ class provider implements
                 continue;
             }
             $records = $DB->get_records_sql(
-                "SELECT l.id, i.title, l.timecreated
+                "SELECT l.id, i.title, l.sharedby, l.timecreated
                    FROM {mediaspeler_listened} l
                    JOIN {mediaspeler_item} i ON i.id = l.itemid
                   WHERE l.mediaspelerid = :mediaspelerid AND l.userid = :userid
@@ -124,6 +128,7 @@ class provider implements
             }
             $listened = array_map(fn($r) => [
                 'item' => format_string($r->title, true, ['context' => $context]),
+                'togetherwithgroupmate' => transform::yesno($r->sharedby > 0),
                 'timecreated' => transform::datetime($r->timecreated),
             ], array_values($records));
 
@@ -159,6 +164,9 @@ class provider implements
         foreach ($contextlist->get_contexts() as $context) {
             if ($cm = self::cm_from_context($context)) {
                 $DB->delete_records('mediaspeler_listened', ['mediaspelerid' => $cm->instance, 'userid' => $userid]);
+                // Groupmates keep what they heard, but no longer with whom.
+                $DB->set_field('mediaspeler_listened', 'sharedby', 0,
+                    ['mediaspelerid' => $cm->instance, 'sharedby' => $userid]);
             }
         }
     }
@@ -179,6 +187,8 @@ class provider implements
         [$insql, $params] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params['mediaspelerid'] = $cm->instance;
         $DB->delete_records_select('mediaspeler_listened', "mediaspelerid = :mediaspelerid AND userid $insql", $params);
+        $DB->set_field_select('mediaspeler_listened', 'sharedby', 0, "mediaspelerid = :mediaspelerid AND sharedby $insql",
+            $params);
     }
 
     /**

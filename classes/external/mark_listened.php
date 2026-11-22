@@ -72,14 +72,25 @@ class mark_listened extends external_api {
 
         listening::mark($item, (int) $USER->id);
 
+        // UC16: groupmates who listened together get the item as well.
+        $mediaspeler = $DB->get_record('mediaspeler', ['id' => $cm->instance], '*', MUST_EXIST);
+        $mates = listening::groupmates($mediaspeler, $cm, $item, (int) $USER->id);
+        foreach ($mates as $mateid) {
+            listening::mark($item, $mateid, (int) $USER->id);
+        }
+
         $completion = new \completion_info($course);
         if ($completion->is_enabled($cm)) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
+            foreach ($mates as $mateid) {
+                $completion->update_state($cm, COMPLETION_COMPLETE, $mateid);
+            }
         }
 
         return [
             'listened' => true,
             'listenedall' => listening::listened_all($cm, (int) $USER->id),
+            'groupmates' => count($mates),
         ];
     }
 
@@ -92,6 +103,7 @@ class mark_listened extends external_api {
         return new external_single_structure([
             'listened' => new external_value(PARAM_BOOL, 'The item is recorded as listened to'),
             'listenedall' => new external_value(PARAM_BOOL, 'The user has now listened to every item'),
+            'groupmates' => new external_value(PARAM_INT, 'Number of groupmates who got the item as well (UC16)'),
         ]);
     }
 }

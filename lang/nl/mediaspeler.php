@@ -25,6 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['autherror'] = 'Nextcloud weigerde de aanmelding. Controleer de gebruikersnaam en het app-wachtwoord van het serviceaccount.';
+$string['collabgrouping'] = 'Samen luisteren';
+$string['collabgrouping_help'] = 'Kies de groepering met de groepen waarin leerlingen samenwerken, bijvoorbeeld duo\'s gemaakt met Groepskeuze. Heeft één leerling van een groep een item gehoord, dan telt het ook als beluisterd voor de andere leden van die groep. Kies "Nee" als elke leerling alleen luistert.';
+$string['collabgrouping_none'] = 'Nee, elke leerling luistert alleen';
 $string['completiondetail:listenall'] = 'Beluister elk item (minstens 75% van elk)';
 $string['completionlistenall'] = 'Leerlingen moeten elk item beluisteren (minstens 75% van elk)';
 $string['completionlistenall_help'] = 'Een item telt als beluisterd zodra de leerling er minstens 75% van gehoord heeft. Alleen stukken die echt afgespeeld zijn tellen: vooruitspoelen telt niet. De volgorde is vrij.';
@@ -45,6 +48,7 @@ $string['itemssaved'] = 'De items zijn opgeslagen.';
 $string['itemtitle'] = 'Titel';
 $string['listened'] = 'Beluisterd';
 $string['listenedshare'] = 'Deel van dit item dat je gehoord hebt';
+$string['listenedtogether'] = 'Ook geteld voor {$a} groepsgenoot/groepsgenoten';
 $string['manageitems'] = 'Items beheren';
 $string['manageitems_intro'] = 'Stel per audiobestand de titel, de uitleg en de positie in. Nieuwe bestanden in de Nextcloud-map komen vanzelf achteraan.';
 $string['mediaspeler:addinstance'] = 'Een nieuwe mediaspeler toevoegen';
@@ -71,6 +75,7 @@ $string['pluginadministration'] = 'Beheer van de mediaspeler';
 $string['pluginname'] = 'Mediaspeler';
 $string['privacy:metadata:mediaspeler_listened'] = 'Welke items een gebruiker beluisterd heeft, voor de activiteitsvoltooiing.';
 $string['privacy:metadata:mediaspeler_listened:itemid'] = 'Het item dat beluisterd werd.';
+$string['privacy:metadata:mediaspeler_listened:sharedby'] = 'De groepsgenoot die aangemeld was toen het item samen beluisterd werd.';
 $string['privacy:metadata:mediaspeler_listened:timecreated'] = 'Wanneer de gebruiker genoeg van het item gehoord had.';
 $string['privacy:metadata:mediaspeler_listened:userid'] = 'De gebruiker die luisterde.';
 $string['privacy:metadata:nextcloud'] = 'De audio wordt uit Nextcloud gehaald met een gedeeld serviceaccount. Er gaan geen gegevens over de gebruiker naar Nextcloud.';

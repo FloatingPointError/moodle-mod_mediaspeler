@@ -54,6 +54,15 @@ class mod_mediaspeler_mod_form extends moodleform_mod {
         $mform->addRule('ncfolder', null, 'required', null, 'client');
         $mform->addHelpButton('ncfolder', 'ncfolder', 'mediaspeler');
 
+        // UC16: listening together in collaboration groups (for example duos made with Group choice).
+        $groupings = [0 => get_string('collabgrouping_none', 'mediaspeler')];
+        foreach (groups_get_all_groupings($this->get_course()->id) as $grouping) {
+            $groupings[$grouping->id] = format_string($grouping->name);
+        }
+        $mform->addElement('select', 'collabgroupingid', get_string('collabgrouping', 'mediaspeler'), $groupings);
+        $mform->addHelpButton('collabgroupingid', 'collabgrouping', 'mediaspeler');
+        $mform->setDefault('collabgroupingid', 0);
+
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
     }

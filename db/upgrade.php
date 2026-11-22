@@ -61,5 +61,25 @@ function xmldb_mediaspeler_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026112200, 'mediaspeler');
     }
 
+    if ($oldversion < 2026112203) {
+        // Fase 6, UC16: listening together in collaboration groups.
+        $table = new xmldb_table('mediaspeler');
+        $field = new xmldb_field('collabgroupingid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0',
+            'completionlistenall');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $key = new xmldb_key('collabgroupingid', XMLDB_KEY_FOREIGN, ['collabgroupingid'], 'groupings', ['id']);
+        $dbman->add_key($table, $key);
+
+        $table = new xmldb_table('mediaspeler_listened');
+        $field = new xmldb_field('sharedby', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userid');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026112203, 'mediaspeler');
+    }
+
     return true;
 }

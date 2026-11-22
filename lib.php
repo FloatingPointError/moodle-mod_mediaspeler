@@ -57,6 +57,7 @@ function mediaspeler_add_instance($data, $mform = null) {
 
     $data->ncfolder = mediaspeler_clean_folder($data->ncfolder ?? '');
     $data->completionlistenall = empty($data->completionlistenall) ? 0 : 1;
+    $data->collabgroupingid = (int) ($data->collabgroupingid ?? 0);
     $data->timecreated = time();
     $data->timemodified = $data->timecreated;
 
@@ -79,6 +80,7 @@ function mediaspeler_update_instance($data, $mform = null) {
     $data->id = $data->instance;
     $data->ncfolder = mediaspeler_clean_folder($data->ncfolder ?? '');
     $data->completionlistenall = empty($data->completionlistenall) ? 0 : 1;
+    $data->collabgroupingid = (int) ($data->collabgroupingid ?? 0);
     $data->timemodified = time();
 
     $DB->update_record('mediaspeler', $data);
