@@ -71,3 +71,4 @@ $string['privacy:metadata:nextcloud'] = 'De audio wordt uit Nextcloud gehaald me
 $string['sourcefolder'] = 'Map in Nextcloud: {$a}';
 $string['syncdone'] = 'Bijgewerkt vanuit Nextcloud: {$a->added} toegevoegd, {$a->updated} gewijzigd, {$a->removed} verwijderd.';
 $string['syncfailed'] = 'Bijwerken vanuit Nextcloud is mislukt. {$a}';
+$string['task_syncitems'] = 'Mediaspelers bijwerken vanuit Nextcloud';

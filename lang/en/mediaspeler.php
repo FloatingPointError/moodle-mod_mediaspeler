@@ -71,3 +71,4 @@ $string['privacy:metadata:nextcloud'] = 'The audio is fetched from Nextcloud wit
 $string['sourcefolder'] = 'Nextcloud folder: {$a}';
 $string['syncdone'] = 'Updated from Nextcloud: {$a->added} added, {$a->updated} changed, {$a->removed} removed.';
 $string['syncfailed'] = 'Could not update from Nextcloud. {$a}';
+$string['task_syncitems'] = 'Update media players from Nextcloud';

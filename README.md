@@ -36,7 +36,7 @@ sudo -u www-data php8.3 public/mod/mediaspeler/cli/test_connection.php --folder=
 
 Het script toont de bestanden in de map, met "audio" bij de bestanden die de mediaspeler gebruikt.
 
-Een leerkracht die de activiteit opent, werkt de lijst automatisch bij vanuit Nextcloud. Nieuwe bestanden komen achteraan de reeks; verwijderde bestanden verdwijnen uit de lijst.
+De lijst wordt bijgewerkt vanuit Nextcloud door de geplande taak *Mediaspelers bijwerken vanuit Nextcloud* (elke 15 minuten, zolang de cron van Moodle draait) en telkens als een leerkracht de activiteit opent. Nieuwe bestanden komen achteraan de reeks; verwijderde bestanden verdwijnen uit de lijst. Eigen titels, uitleg en volgorde blijven bewaard, zolang het bestand dezelfde naam en map houdt. Na het verwijderen van een bestand wordt de voltooiing van de leerlingen opnieuw berekend.
 
 ## Oefenreeks en voltooiing (fase 5)
 

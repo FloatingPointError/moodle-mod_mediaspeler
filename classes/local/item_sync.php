@@ -92,7 +92,46 @@ class item_sync {
         }
         $transaction->allow_commit();
 
+        if ($counts['removed']) {
+            self::update_completion($mediaspeler);
+        }
+
         return $counts;
+    }
+
+    /**
+     * Re-checks completion after items were removed.
+     *
+     * A student who had heard every item except the one that is now gone, has now heard everything.
+     * Removing items can only complete students, never undo a completion, so only students who have
+     * listened to something in this activity need checking.
+     *
+     * @param \stdClass $mediaspeler The activity record.
+     */
+    public static function update_completion(\stdClass $mediaspeler): void {
+        global $CFG, $DB;
+        require_once($CFG->libdir . '/completionlib.php');
+
+        if (empty($mediaspeler->completionlistenall)) {
+            $mediaspeler = $DB->get_record('mediaspeler', ['id' => $mediaspeler->id]);
+            if (!$mediaspeler || empty($mediaspeler->completionlistenall)) {
+                return;
+            }
+        }
+        $cm = get_coursemodule_from_instance('mediaspeler', $mediaspeler->id, $mediaspeler->course);
+        if (!$cm || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+            return;
+        }
+        $course = get_course($cm->course);
+        $completion = new \completion_info($course);
+        if (!$completion->is_enabled($cm)) {
+            return;
+        }
+        $userids = $DB->get_fieldset_select('mediaspeler_listened', 'DISTINCT userid', 'mediaspelerid = ?',
+            [$mediaspeler->id]);
+        foreach ($userids as $userid) {
+            $completion->update_state($cm, COMPLETION_COMPLETE, (int) $userid);
+        }
     }
 
     /**
