@@ -96,6 +96,11 @@ if ($form->is_cancelled()) {
     }
     $transaction->allow_commit();
 
+    \mod_mediaspeler\event\items_updated::create([
+        'objectid' => $mediaspeler->id,
+        'context' => $context,
+    ])->trigger();
+
     // Fewer items for a group can complete students; a completion is never taken back.
     \mod_mediaspeler\local\item_sync::update_completion($mediaspeler);
 

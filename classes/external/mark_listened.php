@@ -70,13 +70,25 @@ class mark_listened extends external_api {
             throw new \moodle_exception('itemnotavailable', 'mediaspeler');
         }
 
-        listening::mark($item, (int) $USER->id);
+        if (listening::mark($item, (int) $USER->id)) {
+            \mod_mediaspeler\event\item_listened::create([
+                'objectid' => $item->id,
+                'context' => $context,
+                'relateduserid' => (int) $USER->id,
+            ])->trigger();
+        }
 
         // UC16: groupmates who listened together get the item as well.
         $mediaspeler = $DB->get_record('mediaspeler', ['id' => $cm->instance], '*', MUST_EXIST);
         $mates = listening::groupmates($mediaspeler, $cm, $item, (int) $USER->id);
         foreach ($mates as $mateid) {
-            listening::mark($item, $mateid, (int) $USER->id);
+            if (listening::mark($item, $mateid, (int) $USER->id)) {
+                \mod_mediaspeler\event\item_listened::create([
+                    'objectid' => $item->id,
+                    'context' => $context,
+                    'relateduserid' => $mateid,
+                ])->trigger();
+            }
         }
 
         $completion = new \completion_info($course);

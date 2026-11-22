@@ -52,7 +52,7 @@ class provider implements
             'sharedby' => 'privacy:metadata:mediaspeler_listened:sharedby',
             'timecreated' => 'privacy:metadata:mediaspeler_listened:timecreated',
         ], 'privacy:metadata:mediaspeler_listened');
-        $collection->add_external_location_link('nextcloud', [], 'privacy:metadata:nextcloud');
+        // Nextcloud is only reached with the shared service account; no data about users is sent there.
         return $collection;
     }
 

@@ -39,7 +39,7 @@ function mediaspeler_supports($feature) {
         FEATURE_COMPLETION_HAS_RULES => true,  // Fase 5: every item listened to.
         FEATURE_GRADE_HAS_GRADE => false,
         FEATURE_GRADE_OUTCOMES => false,
-        FEATURE_BACKUP_MOODLE2 => false,        // Fase 7.
+        FEATURE_BACKUP_MOODLE2 => true,         // Fase 7: back-up, herstel en cursus kopiëren.
         FEATURE_MOD_PURPOSE => MOD_PURPOSE_CONTENT,
         default => null,
     };
@@ -101,7 +101,10 @@ function mediaspeler_try_sync(stdClass $mediaspeler): ?array {
     try {
         return \mod_mediaspeler\local\item_sync::sync($mediaspeler);
     } catch (moodle_exception $e) {
-        debugging('mod_mediaspeler: sync failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        // Not configured yet is normal on a new site (and in tests); anything else is worth a note.
+        if ($e->errorcode !== 'notconfigured') {
+            debugging('mod_mediaspeler: sync failed: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
         return null;
     }
 }
@@ -215,4 +218,48 @@ function mediaspeler_extend_settings_navigation(settings_navigation $settingsnav
         'mod_mediaspeler_items',
         new pix_icon('i/edit', '')
     );
+}
+
+/**
+ * Adds the media player to the course reset form (fase 7).
+ *
+ * @param MoodleQuickForm $mform The reset form.
+ */
+function mediaspeler_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'mediaspelerheader', get_string('modulenameplural', 'mediaspeler'));
+    $mform->addElement('advcheckbox', 'reset_mediaspeler_listened', get_string('resetlistened', 'mediaspeler'));
+}
+
+/**
+ * Default values of the course reset form.
+ *
+ * @param stdClass $course The course.
+ * @return array
+ */
+function mediaspeler_reset_course_form_defaults($course) {
+    return ['reset_mediaspeler_listened' => 1];
+}
+
+/**
+ * Removes what students listened to, when a course is reset for a new school year.
+ *
+ * Items, titles, explanations and groups stay. Completion itself is reset by Moodle's own option.
+ *
+ * @param stdClass $data Data from the reset form.
+ * @return array Status lines for the reset report.
+ */
+function mediaspeler_reset_userdata($data) {
+    global $DB;
+
+    $status = [];
+    if (!empty($data->reset_mediaspeler_listened)) {
+        $DB->delete_records_select('mediaspeler_listened',
+            'mediaspelerid IN (SELECT id FROM {mediaspeler} WHERE course = ?)', [$data->courseid]);
+        $status[] = [
+            'component' => get_string('modulenameplural', 'mediaspeler'),
+            'item' => get_string('resetlistened', 'mediaspeler'),
+            'error' => false,
+        ];
+    }
+    return $status;
 }

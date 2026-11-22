@@ -4,7 +4,7 @@ Moodle-activiteit die audio uit een map in Nextcloud afspeelt als oefenreeks voo
 
 - **Moodle:** 5.2 (PHP 8.3 of 8.4)
 - **Nextcloud:** 34, via WebDAV met één serviceaccount
-- **Status:** fase 6. De activiteit leest een Nextcloud-map uit en toont de bestanden als oefenreeks in een eigen speler. De leerkracht stelt titel, uitleg en volgorde in; de leerling kiest zelf de volgorde. Activiteitsvoltooiing kan op "elk item beluisterd" (minstens 75% van elk). Items kunnen per groep of instrument getoond worden (fase 6).
+- **Status:** fase 7. De activiteit leest een Nextcloud-map uit en toont de bestanden als oefenreeks in een eigen speler. De leerkracht stelt titel, uitleg en volgorde in; de leerling kiest zelf de volgorde. Activiteitsvoltooiing kan op "elk item beluisterd" (minstens 75% van elk). Items kunnen per groep of instrument getoond worden (fase 6).
 
 ## Installeren op de test-VM
 
@@ -57,6 +57,21 @@ De lijst wordt bijgewerkt vanuit Nextcloud door de geplande taak *Mediaspelers b
 ## Samen luisteren (UC16)
 
 Leerlingen werken soms samen, terwijl maar één van hen aangemeld is. Kies dan in de instellingen van de activiteit bij **Samen luisteren** de groepering met de samenwerkgroepen, bijvoorbeeld de duo's die je met Groepskeuze laat vormen (zet die groepen in één groepering). Heeft één leerling van een groep een item gehoord, dan telt het ook voor de andere leden van die groep, als het item voor hen bedoeld is. Bij de groepsgenoot wordt bewaard wie aangemeld was. Dit staat los van de groepen per instrument.
+
+## Back-up, cursus kopiëren en resetten (fase 7)
+
+- **Back-up en herstel** nemen de activiteit mee: de map in Nextcloud, de items met titel, uitleg en volgorde, de groepen per item en de groepering voor samen luisteren. De audio zelf blijft in Nextcloud. Met gebruikersgegevens gaat ook mee wie wat beluisterd heeft.
+- **Cursus kopiëren** (bijvoorbeeld voor een nieuw schooljaar) werkt zonder leerlingengegevens: de kopie begint leeg. Neem de groepen mee in de kopie, anders zijn de items in de kopie voor iedereen.
+- **Cursus resetten:** de optie *Verwijderen welke items leerlingen beluisterd hebben* staat standaard aan. Items, titels en groepen blijven.
+- **Logboeken:** *Item beluisterd* (ook voor groepsgenoten bij samen luisteren) en *Items bijgewerkt* staan in de logboeken van Moodle.
+
+## Tests
+
+PHPUnit-tests staan in `tests/`. Vanuit de hoofdmap van Moodle, na `admin/tool/phpunit/cli/init.php`:
+
+```bash
+vendor/bin/phpunit --testsuite mod_mediaspeler_testsuite
+```
 
 ## JavaScript
 
