@@ -77,28 +77,25 @@ class listening {
     }
 
     /**
-     * Whether a user has listened to every item of an activity.
+     * Whether a user has listened to every item of an activity that is meant for him (fase 6: per group).
      *
-     * An activity without items is never complete: there is nothing to listen to yet.
+     * An activity without items for this user is never complete: there is nothing to listen to.
      *
-     * @param int $mediaspelerid The activity id.
+     * @param \stdClass|\cm_info $cm The course module.
      * @param int $userid The user.
      * @return bool
      */
-    public static function listened_all(int $mediaspelerid, int $userid): bool {
-        global $DB;
-
-        $total = $DB->count_records('mediaspeler_item', ['mediaspelerid' => $mediaspelerid]);
-        if ($total === 0) {
+    public static function listened_all($cm, int $userid): bool {
+        $items = visibility::visible_items($cm, $userid);
+        if (!$items) {
             return false;
         }
-        // Count through the items table, so records of items that no longer exist do not count.
-        $listened = $DB->count_records_sql(
-            'SELECT COUNT(1)
-               FROM {mediaspeler_listened} l
-               JOIN {mediaspeler_item} i ON i.id = l.itemid
-              WHERE i.mediaspelerid = :mediaspelerid AND l.userid = :userid',
-            ['mediaspelerid' => $mediaspelerid, 'userid' => $userid]);
-        return $listened >= $total;
+        $listened = array_flip(self::listened_itemids((int) $cm->instance, $userid));
+        foreach ($items as $item) {
+            if (!isset($listened[(int) $item->id])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

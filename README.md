@@ -4,7 +4,7 @@ Moodle-activiteit die audio uit een map in Nextcloud afspeelt als oefenreeks voo
 
 - **Moodle:** 5.2 (PHP 8.3 of 8.4)
 - **Nextcloud:** 34, via WebDAV met één serviceaccount
-- **Status:** fase 5. De activiteit leest een Nextcloud-map uit en toont de bestanden als oefenreeks in een eigen speler. De leerkracht stelt titel, uitleg en volgorde in; de leerling kiest zelf de volgorde. Activiteitsvoltooiing kan op "elk item beluisterd" (minstens 75% van elk). Per groep of instrument volgt in fase 6.
+- **Status:** fase 6. De activiteit leest een Nextcloud-map uit en toont de bestanden als oefenreeks in een eigen speler. De leerkracht stelt titel, uitleg en volgorde in; de leerling kiest zelf de volgorde. Activiteitsvoltooiing kan op "elk item beluisterd" (minstens 75% van elk). Items kunnen per groep of instrument getoond worden (fase 6).
 
 ## Installeren op de test-VM
 
@@ -45,6 +45,14 @@ De lijst wordt bijgewerkt vanuit Nextcloud door de geplande taak *Mediaspelers b
 - **Beluisterd:** een item telt als beluisterd zodra de leerling er minstens 75% van gehoord heeft. Alleen stukken die echt afgespeeld zijn tellen; vooruitspoelen telt niet.
 - **Voltooiing:** zet bij de instellingen van de activiteit onder Activiteitsvoltooiing *Leerlingen moeten elk item beluisteren* aan. De leerkracht volgt dit in het rapport Activiteitsvoltooiing van de cursus.
 - **Privacy:** de plugin bewaart per leerling welke items beluisterd zijn (tabel `mediaspeler_listened`). Export en verwijderen lopen via de privacy-API van Moodle.
+
+## Per groep of instrument (fase 6)
+
+- Maak in de cursus groepen aan, bijvoorbeeld één per instrument. Heeft de activiteit een groepering, dan kun je alleen groepen uit die groepering kiezen.
+- Kies onder *Items beheren* per item bij **Voor groepen** de groepen die het item te zien krijgen. Leeg betekent: iedereen.
+- Leerlingen zien en spelen alleen de items voor hun groepen. Ook afspelen en afvinken via een rechtstreekse link wordt geweigerd. Leerkrachten zien alle items, met de groepen erbij.
+- Voltooiing telt alleen de items die voor de leerling bedoeld zijn. Wordt de leerling uit een groep gehaald of verandert de leerkracht de groepen, dan wordt de voltooiing opnieuw bekeken. Een voltooiing wordt nooit teruggedraaid, ook niet als er later een track bijkomt.
+- Wordt een groep verwijderd, dan verdwijnt ze ook bij de items. Een item zonder overgebleven groepen is weer voor iedereen.
 
 ## JavaScript
 

@@ -25,7 +25,8 @@
     * cmid - Course module id
     * threshold - Share of an item that counts as listened to (0-1)
     * first - The item that is loaded first
-    * items - The items, in the suggested order: id, position, title, description (HTML), src, listened
+    * items - The items, in the suggested order: id, position, title, description (HTML), src, listened,
+      groups (names, only filled for teachers)
 
     Example context (json):
     {
@@ -35,7 +36,8 @@
         "first": {"id": 1, "title": "Intro", "src": "#"},
         "items": [
             {"id": 1, "position": 1, "title": "Intro", "description": "<p>Luister naar de bas.</p>", "src": "#", "listened": true},
-            {"id": 2, "position": 2, "title": "Couplet", "description": "", "src": "#", "listened": false}
+            {"id": 2, "position": 2, "title": "Couplet", "description": "", "src": "#", "listened": false,
+             "groups": [{"name": "Cello"}]}
         ]
     }
 }}
@@ -60,10 +62,16 @@
     <p class="small text-muted">{{#str}} freeorder, mod_mediaspeler {{/str}}</p>
     <ol class="list-group list-group-numbered mod-mediaspeler-items">
         {{#items}}
-        <li class="list-group-item d-flex align-items-start gap-2" data-region="item"
+        <li class="list-group-item d-flex align-items-start gap-2{{#current}} active{{/current}}" data-region="item"{{#current}} aria-current="true"{{/current}}
             data-itemid="{{id}}" data-src="{{src}}" data-title="{{title}}" data-listened="{{#listened}}1{{/listened}}{{^listened}}0{{/listened}}">
             <div class="flex-grow-1">
-                <button type="button" class="btn btn-link p-0 text-start fw-bold" data-action="select">{{title}}</button>
+                <button type="button" class="btn btn-link p-0 text-start fw-bold{{#current}} text-white{{/current}}" data-action="select">{{title}}</button>
+                {{#groups.0}}
+                <div class="mt-1" data-region="groups">
+                    <span class="visually-hidden">{{#str}} itemgroups, mod_mediaspeler {{/str}}:</span>
+                    {{#groups}}<span class="badge bg-secondary text-dark me-1">{{name}}</span>{{/groups}}
+                </div>
+                {{/groups.0}}
                 {{#description}}<div class="small mt-1">{{{description}}}</div>{{/description}}
             </div>
             <span class="badge bg-success" data-region="listened" {{^listened}}hidden{{/listened}}>

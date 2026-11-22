@@ -106,9 +106,12 @@ class item_sync {
      * Removing items can only complete students, never undo a completion, so only students who have
      * listened to something in this activity need checking.
      *
+     * Also used after groups change (fase 6): fewer items for a student can complete him as well.
+     *
      * @param \stdClass $mediaspeler The activity record.
+     * @param int|null $userid Only this user; null for everyone who has listened to something.
      */
-    public static function update_completion(\stdClass $mediaspeler): void {
+    public static function update_completion(\stdClass $mediaspeler, ?int $userid = null): void {
         global $CFG, $DB;
         require_once($CFG->libdir . '/completionlib.php');
 
@@ -127,8 +130,8 @@ class item_sync {
         if (!$completion->is_enabled($cm)) {
             return;
         }
-        $userids = $DB->get_fieldset_select('mediaspeler_listened', 'DISTINCT userid', 'mediaspelerid = ?',
-            [$mediaspeler->id]);
+        $userids = $userid !== null ? [$userid] : $DB->get_fieldset_select('mediaspeler_listened', 'DISTINCT userid',
+            'mediaspelerid = ?', [$mediaspeler->id]);
         foreach ($userids as $userid) {
             $completion->update_state($cm, COMPLETION_COMPLETE, (int) $userid);
         }

@@ -51,7 +51,15 @@ try {
 }
 
 $items = array_values($DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->id], 'sortorder ASC, id ASC'));
-$form = new \mod_mediaspeler\form\items_form($url, ['items' => $items, 'cmid' => $cm->id]);
+// Fase 6: the groups of the course, within the activity's grouping if it has one.
+$groups = groups_list_to_menu(groups_get_all_groups($course->id, 0, $cm->groupingid));
+$itemgroups = \mod_mediaspeler\local\visibility::item_groups($mediaspeler->id);
+$form = new \mod_mediaspeler\form\items_form($url, [
+    'items' => $items,
+    'cmid' => $cm->id,
+    'groups' => $groups,
+    'itemgroups' => $itemgroups,
+]);
 
 if ($form->is_cancelled()) {
     redirect($viewurl);
@@ -81,8 +89,15 @@ if ($form->is_cancelled()) {
             'sortorder' => $sortorder + 1,
             'timemodified' => $now,
         ]);
+        if ($groups) {
+            $chosen = array_intersect(array_map('intval', (array) ($data->groups[$itemid] ?? [])), array_keys($groups));
+            \mod_mediaspeler\local\visibility::set_item_groups($itemid, $chosen);
+        }
     }
     $transaction->allow_commit();
+
+    // Fewer items for a group can complete students; a completion is never taken back.
+    \mod_mediaspeler\local\item_sync::update_completion($mediaspeler);
 
     redirect($viewurl, get_string('itemssaved', 'mediaspeler'), null, \core\output\notification::NOTIFY_SUCCESS);
 }

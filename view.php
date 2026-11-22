@@ -63,7 +63,11 @@ if (has_capability('mod/mediaspeler:manageitems', $context)) {
         get_string('manageitems', 'mediaspeler'), 'get', ['class' => 'mb-3']);
 }
 
-$items = $DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->id], 'sortorder ASC, id ASC');
+// Fase 6: only the items meant for the user's groups; teachers see everything.
+$items = \mod_mediaspeler\local\visibility::visible_items($cm, (int) $USER->id);
+$seesall = \mod_mediaspeler\local\visibility::sees_all($context, (int) $USER->id);
+$itemgroups = $seesall ? \mod_mediaspeler\local\visibility::item_groups($mediaspeler->id) : [];
+$groupnames = $itemgroups ? groups_list_to_menu(groups_get_all_groups($course->id)) : [];
 if (!$items) {
     echo $OUTPUT->notification(get_string('noitems', 'mediaspeler'), \core\output\notification::NOTIFY_INFO, false);
 } else {
@@ -86,8 +90,12 @@ if (!$items) {
                 ? format_text($item->description, FORMAT_PLAIN, ['context' => $context]) : '',
             'src' => $src->out(false),
             'listened' => isset($listened[$item->id]),
+            // Teachers see for which groups an item is meant.
+            'groups' => array_values(array_map(fn($groupid) => ['name' => $groupnames[$groupid] ?? '?'],
+                $itemgroups[(int) $item->id] ?? [])),
         ];
     }
+    $player['items'][0]['current'] = true;
     $player['first'] = $player['items'][0];
     echo $OUTPUT->render_from_template('mod_mediaspeler/player', $player);
     $PAGE->requires->js_call_amd('mod_mediaspeler/player', 'init', [$player['uniqid']]);

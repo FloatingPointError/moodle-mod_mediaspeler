@@ -23,7 +23,8 @@ require_once($CFG->libdir . '/formslib.php');
 /**
  * Form in which the teacher sets title, explanation and position of every item (UC3).
  *
- * Custom data: 'items' (records sorted by sortorder) and 'cmid'.
+ * Custom data: 'items' (records sorted by sortorder), 'cmid', 'groups' (id => name of the groups
+ * that can be chosen) and 'itemgroups' (itemid => group ids).
  *
  * @package    mod_mediaspeler
  * @copyright  2026 Michel Labruyère
@@ -41,6 +42,11 @@ class items_form extends \moodleform {
 
         $mform->addElement('hidden', 'id', $this->_customdata['cmid']);
         $mform->setType('id', PARAM_INT);
+
+        $groups = $this->_customdata['groups'] ?? [];
+        if (!$groups) {
+            $mform->addElement('static', 'nogroups', '', get_string('nogroups', 'mediaspeler'));
+        }
 
         $positions = array_combine(range(1, max(1, $count)), range(1, max(1, $count)));
         $position = 1;
@@ -62,6 +68,14 @@ class items_form extends \moodleform {
                 ['rows' => 3, 'cols' => 60]);
             $mform->setType("description[{$id}]", PARAM_TEXT);
             $mform->setDefault("description[{$id}]", $item->description ?? '');
+
+            // Fase 6 (UC10): for which groups the item is meant; none means everyone.
+            if ($groups) {
+                $mform->addElement('autocomplete', "groups[{$id}]", get_string('itemgroups', 'mediaspeler'), $groups,
+                    ['multiple' => true, 'noselectionstring' => get_string('itemgroups_everyone', 'mediaspeler')]);
+                $mform->setDefault("groups[{$id}]", $this->_customdata['itemgroups'][$id] ?? []);
+                $mform->addHelpButton("groups[{$id}]", 'itemgroups', 'mediaspeler');
+            }
         }
 
         $this->add_action_buttons();
@@ -79,6 +93,14 @@ class items_form extends \moodleform {
         foreach ($data['title'] ?? [] as $id => $title) {
             if (trim($title) === '') {
                 $errors["title[{$id}]"] = get_string('required');
+            }
+        }
+        $groups = $this->_customdata['groups'] ?? [];
+        foreach ($data['groups'] ?? [] as $id => $groupids) {
+            foreach ((array) $groupids as $groupid) {
+                if (!isset($groups[$groupid])) {
+                    $errors["groups[{$id}]"] = get_string('invalidgroup', 'mediaspeler');
+                }
             }
         }
         return $errors;

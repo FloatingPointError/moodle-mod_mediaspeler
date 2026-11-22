@@ -40,7 +40,8 @@ $context = context_module::instance($cm->id);
 require_capability('mod/mediaspeler:view', $context);
 
 $item = $DB->get_record('mediaspeler_item', ['id' => $itemid, 'mediaspelerid' => $cm->instance]);
-if (!$item) {
+// Fase 6: an item for other groups is treated as not there.
+if (!$item || !\mod_mediaspeler\local\visibility::item_visible($item, $cm, (int) $USER->id)) {
     send_header_404();
     die;
 }

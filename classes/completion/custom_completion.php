@@ -41,7 +41,7 @@ class custom_completion extends activity_custom_completion {
     public function get_state(string $rule): int {
         $this->validate_rule($rule);
 
-        return listening::listened_all((int) $this->cm->instance, $this->userid)
+        return listening::listened_all($this->cm, $this->userid)
             ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;
     }
 

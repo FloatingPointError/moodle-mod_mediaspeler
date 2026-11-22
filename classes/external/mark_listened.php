@@ -21,6 +21,7 @@ use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
 use mod_mediaspeler\local\listening;
+use mod_mediaspeler\local\visibility;
 
 /**
  * Web service: the player reports that the student has heard enough of an item (fase 5).
@@ -64,6 +65,10 @@ class mark_listened extends external_api {
 
         // The item must belong to this activity, otherwise anyone could mark items of other activities.
         $item = $DB->get_record('mediaspeler_item', ['id' => $itemid, 'mediaspelerid' => $cm->instance], '*', MUST_EXIST);
+        // Fase 6: only items meant for one of the user's groups.
+        if (!visibility::item_visible($item, $cm, (int) $USER->id)) {
+            throw new \moodle_exception('itemnotavailable', 'mediaspeler');
+        }
 
         listening::mark($item, (int) $USER->id);
 
@@ -74,7 +79,7 @@ class mark_listened extends external_api {
 
         return [
             'listened' => true,
-            'listenedall' => listening::listened_all((int) $cm->instance, (int) $USER->id),
+            'listenedall' => listening::listened_all($cm, (int) $USER->id),
         ];
     }
 
