@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/mediaspeler/db" VERSION="20261120" COMMENT="XMLDB file for mod_mediaspeler"
+<XMLDB PATH="mod/mediaspeler/db" VERSION="20261122" COMMENT="XMLDB file for mod_mediaspeler"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -12,6 +12,7 @@
         <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="ncfolder" TYPE="char" LENGTH="1333" NOTNULL="true" SEQUENCE="false" COMMENT="Folder path relative to the service account's Nextcloud root"/>
+        <FIELD NAME="completionlistenall" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Completion rule: every item listened to"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
@@ -52,6 +53,25 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="itemid-groupid" UNIQUE="true" FIELDS="itemid, groupid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="mediaspeler_listened" COMMENT="Which student has listened to which item (at least 75 percent), for completion">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mediaspelerid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="mediaspelerid" TYPE="foreign" FIELDS="mediaspelerid" REFTABLE="mediaspeler" REFFIELDS="id"/>
+        <KEY NAME="itemid" TYPE="foreign" FIELDS="itemid" REFTABLE="mediaspeler_item" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="itemid-userid" UNIQUE="true" FIELDS="itemid, userid"/>
+        <INDEX NAME="mediaspelerid-userid" UNIQUE="false" FIELDS="mediaspelerid, userid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

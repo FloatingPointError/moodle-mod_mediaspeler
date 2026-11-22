@@ -4,7 +4,7 @@ Moodle-activiteit die audio uit een map in Nextcloud afspeelt als oefenreeks voo
 
 - **Moodle:** 5.2 (PHP 8.3 of 8.4)
 - **Nextcloud:** 34, via WebDAV met één serviceaccount
-- **Status:** fase 4. De activiteit leest een Nextcloud-map uit en speelt de audiobestanden af via Moodle, met spoelen. De speler voor de oefenreeks volgt in fase 5.
+- **Status:** fase 5. De activiteit leest een Nextcloud-map uit en toont de bestanden als oefenreeks in een eigen speler. De leerkracht stelt titel, uitleg en volgorde in; de leerling kiest zelf de volgorde. Activiteitsvoltooiing kan op "elk item beluisterd" (minstens 75% van elk). Per groep of instrument volgt in fase 6.
 
 ## Installeren op de test-VM
 
@@ -37,6 +37,22 @@ sudo -u www-data php8.3 public/mod/mediaspeler/cli/test_connection.php --folder=
 Het script toont de bestanden in de map, met "audio" bij de bestanden die de mediaspeler gebruikt.
 
 Een leerkracht die de activiteit opent, werkt de lijst automatisch bij vanuit Nextcloud. Nieuwe bestanden komen achteraan de reeks; verwijderde bestanden verdwijnen uit de lijst.
+
+## Oefenreeks en voltooiing (fase 5)
+
+- **Items beheren:** open de activiteit als leerkracht en kies *Items beheren*. Per bestand stel je de titel, de uitleg en de positie in.
+- **Speler:** één speler per activiteit, met de lijst eronder. Meerdere activiteiten op dezelfde pagina zitten elkaar niet in de weg.
+- **Beluisterd:** een item telt als beluisterd zodra de leerling er minstens 75% van gehoord heeft. Alleen stukken die echt afgespeeld zijn tellen; vooruitspoelen telt niet.
+- **Voltooiing:** zet bij de instellingen van de activiteit onder Activiteitsvoltooiing *Leerlingen moeten elk item beluisteren* aan. De leerkracht volgt dit in het rapport Activiteitsvoltooiing van de cursus.
+- **Privacy:** de plugin bewaart per leerling welke items beluisterd zijn (tabel `mediaspeler_listened`). Export en verwijderen lopen via de privacy-API van Moodle.
+
+## JavaScript
+
+De gebouwde versie van de speler staat in `amd/build`, dus Node.js is niet nodig om de plugin te gebruiken. Pas je `amd/src/player.js` aan, bouw dan opnieuw vanuit de hoofdmap van Moodle:
+
+```bash
+npx grunt amd --root=public/mod/mediaspeler
+```
 
 ## Licentie
 

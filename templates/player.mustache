@@ -1,0 +1,75 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_mediaspeler/player
+
+    Player for one practice series (UC3, fase 5). Every instance has its own root element, so
+    several players can sit on one page (UC14, UC15).
+
+    Context variables required for this template:
+    * uniqid - Id of the root element, unique on the page
+    * cmid - Course module id
+    * threshold - Share of an item that counts as listened to (0-1)
+    * first - The item that is loaded first
+    * items - The items, in the suggested order: id, position, title, description (HTML), src, listened
+
+    Example context (json):
+    {
+        "uniqid": "mediaspeler123",
+        "cmid": 5,
+        "threshold": 0.75,
+        "first": {"id": 1, "title": "Intro", "src": "#"},
+        "items": [
+            {"id": 1, "position": 1, "title": "Intro", "description": "<p>Luister naar de bas.</p>", "src": "#", "listened": true},
+            {"id": 2, "position": 2, "title": "Couplet", "description": "", "src": "#", "listened": false}
+        ]
+    }
+}}
+<div class="mod-mediaspeler-player" id="{{uniqid}}" data-cmid="{{cmid}}" data-threshold="{{threshold}}">
+    <div class="mod-mediaspeler-now card mb-3">
+        <div class="card-body">
+            <p class="mb-1 small text-muted">{{#str}} nowplaying, mod_mediaspeler {{/str}}</p>
+            <p class="h5 mb-2" data-region="now-title">{{first.title}}</p>
+            <audio class="d-block w-100" controls preload="metadata" data-region="audio"
+                src="{{first.src}}" data-itemid="{{first.id}}"></audio>
+            <div class="mt-2 d-flex align-items-center gap-2" data-region="progress-wrap">
+                <div class="progress flex-grow-1" style="height: .5rem;">
+                    <div class="progress-bar" role="progressbar" data-region="progress" style="width: 0%;"
+                        aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+                        aria-label="{{#str}} listenedshare, mod_mediaspeler {{/str}}"></div>
+                </div>
+                <span class="small text-muted" data-region="progress-text">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <p class="small text-muted">{{#str}} freeorder, mod_mediaspeler {{/str}}</p>
+    <ol class="list-group list-group-numbered mod-mediaspeler-items">
+        {{#items}}
+        <li class="list-group-item d-flex align-items-start gap-2" data-region="item"
+            data-itemid="{{id}}" data-src="{{src}}" data-title="{{title}}" data-listened="{{#listened}}1{{/listened}}{{^listened}}0{{/listened}}">
+            <div class="flex-grow-1">
+                <button type="button" class="btn btn-link p-0 text-start fw-bold" data-action="select">{{title}}</button>
+                {{#description}}<div class="small mt-1">{{{description}}}</div>{{/description}}
+            </div>
+            <span class="badge bg-success" data-region="listened" {{^listened}}hidden{{/listened}}>
+                {{#pix}} i/checked, core {{/pix}}{{#str}} listened, mod_mediaspeler {{/str}}
+            </span>
+        </li>
+        {{/items}}
+    </ol>
+</div>

@@ -86,6 +86,7 @@ class item_sync {
         if ($bypath) {
             $ids = array_column($bypath, 'id');
             $DB->delete_records_list('mediaspeler_item_group', 'itemid', $ids);
+            $DB->delete_records_list('mediaspeler_listened', 'itemid', $ids);
             $DB->delete_records_list('mediaspeler_item', 'id', $ids);
             $counts['removed'] = count($ids);
         }

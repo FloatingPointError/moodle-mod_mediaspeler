@@ -57,4 +57,44 @@ class mod_mediaspeler_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
     }
+
+    /**
+     * Adds the custom completion rule: every item listened to (fase 5).
+     *
+     * @return array Names of the added elements.
+     */
+    public function add_completion_rules() {
+        $mform = $this->_form;
+
+        $element = 'completionlistenall' . $this->get_suffix();
+        $mform->addElement('checkbox', $element, '', get_string('completionlistenall', 'mediaspeler'));
+        $mform->addHelpButton($element, 'completionlistenall', 'mediaspeler');
+        return [$element];
+    }
+
+    /**
+     * Whether the custom completion rule is ticked.
+     *
+     * @param array $data Form data.
+     * @return bool
+     */
+    public function completion_rule_enabled($data) {
+        return !empty($data['completionlistenall' . $this->get_suffix()]);
+    }
+
+    /**
+     * Unticks the custom rule when automatic completion is switched off or the box is cleared.
+     *
+     * @param stdClass $data Form data.
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+        if (!empty($data->completionunlocked)) {
+            $suffix = $this->get_suffix();
+            $completion = $data->{'completion' . $suffix} ?? COMPLETION_TRACKING_NONE;
+            if (empty($data->{'completionlistenall' . $suffix}) || $completion != COMPLETION_TRACKING_AUTOMATIC) {
+                $data->{'completionlistenall' . $suffix} = 0;
+            }
+        }
+    }
 }

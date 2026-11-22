@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_mediaspeler';
-$plugin->version   = 2026112100;      // YYYYMMDDXX.
+$plugin->version   = 2026112200;      // YYYYMMDDXX.
 $plugin->requires  = 2026042000;      // Moodle 5.2.0.
 $plugin->supported = [502, 502];      // Tested on Moodle 5.2 only for now.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.3.0 (fase 4: afspelen via Moodle)';
+$plugin->release   = '0.4.0 (fase 5: oefenreeks)';

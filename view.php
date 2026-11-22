@@ -59,25 +59,38 @@ if (has_capability('mod/mediaspeler:manageitems', $context)) {
     }
     echo html_writer::tag('p', get_string('sourcefolder', 'mediaspeler', s($mediaspeler->ncfolder)),
         ['class' => 'text-muted']);
+    echo $OUTPUT->single_button(new moodle_url('/mod/mediaspeler/items.php', ['id' => $cm->id]),
+        get_string('manageitems', 'mediaspeler'), 'get', ['class' => 'mb-3']);
 }
 
-$items = $DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->id], 'sortorder ASC');
+$items = $DB->get_records('mediaspeler_item', ['mediaspelerid' => $mediaspeler->id], 'sortorder ASC, id ASC');
 if (!$items) {
     echo $OUTPUT->notification(get_string('noitems', 'mediaspeler'), \core\output\notification::NOTIFY_INFO, false);
 } else {
-    // Fase 4: a plain audio element per item; the real player comes in fase 5.
-    $list = [];
+    // Fase 5: the player for the practice series. The student chooses the order; the list is a suggestion.
+    $listened = array_flip(\mod_mediaspeler\local\listening::listened_itemids($mediaspeler->id, $USER->id));
+    $player = [
+        'uniqid' => html_writer::random_id('mediaspeler'),
+        'cmid' => $cm->id,
+        'threshold' => \mod_mediaspeler\local\listening::THRESHOLD,
+        'items' => [],
+    ];
+    $position = 1;
     foreach ($items as $item) {
         $src = new moodle_url('/mod/mediaspeler/stream.php', ['id' => $cm->id, 'item' => $item->id]);
-        $audio = html_writer::tag('audio', '', [
-            'controls' => 'controls',
-            'preload' => 'none',
+        $player['items'][] = [
+            'id' => $item->id,
+            'position' => $position++,
+            'title' => format_string($item->title, true, ['context' => $context]),
+            'description' => $item->description !== null && trim($item->description) !== ''
+                ? format_text($item->description, FORMAT_PLAIN, ['context' => $context]) : '',
             'src' => $src->out(false),
-            'class' => 'd-block w-100 mt-1',
-        ]);
-        $list[] = html_writer::tag('li', format_string($item->title) . $audio, ['class' => 'mb-3']);
+            'listened' => isset($listened[$item->id]),
+        ];
     }
-    echo html_writer::tag('ol', implode('', $list), ['class' => 'mod-mediaspeler-items']);
+    $player['first'] = $player['items'][0];
+    echo $OUTPUT->render_from_template('mod_mediaspeler/player', $player);
+    $PAGE->requires->js_call_amd('mod_mediaspeler/player', 'init', [$player['uniqid']]);
 }
 
 echo $OUTPUT->footer();

@@ -36,6 +36,7 @@ function mediaspeler_supports($feature) {
         FEATURE_MOD_INTRO => true,
         FEATURE_SHOW_DESCRIPTION => true,
         FEATURE_COMPLETION_TRACKS_VIEWS => true,
+        FEATURE_COMPLETION_HAS_RULES => true,  // Fase 5: every item listened to.
         FEATURE_GRADE_HAS_GRADE => false,
         FEATURE_GRADE_OUTCOMES => false,
         FEATURE_BACKUP_MOODLE2 => false,        // Fase 7.
@@ -55,6 +56,7 @@ function mediaspeler_add_instance($data, $mform = null) {
     global $DB;
 
     $data->ncfolder = mediaspeler_clean_folder($data->ncfolder ?? '');
+    $data->completionlistenall = empty($data->completionlistenall) ? 0 : 1;
     $data->timecreated = time();
     $data->timemodified = $data->timecreated;
 
@@ -76,6 +78,7 @@ function mediaspeler_update_instance($data, $mform = null) {
 
     $data->id = $data->instance;
     $data->ncfolder = mediaspeler_clean_folder($data->ncfolder ?? '');
+    $data->completionlistenall = empty($data->completionlistenall) ? 0 : 1;
     $data->timemodified = time();
 
     $DB->update_record('mediaspeler', $data);
@@ -120,6 +123,7 @@ function mediaspeler_delete_instance($id) {
     if ($itemids) {
         $DB->delete_records_list('mediaspeler_item_group', 'itemid', $itemids);
     }
+    $DB->delete_records('mediaspeler_listened', ['mediaspelerid' => $id]);
     $DB->delete_records('mediaspeler_item', ['mediaspelerid' => $id]);
     $DB->delete_records('mediaspeler', ['id' => $id]);
 
@@ -157,4 +161,56 @@ function mediaspeler_clean_folder(string $folder): string {
     $folder = str_replace('\\', '/', trim($folder));
     $parts = array_filter(explode('/', $folder), fn($part) => $part !== '' && $part !== '.' && $part !== '..');
     return implode('/', $parts);
+}
+
+/**
+ * Information about the activity for the course page, cached by Moodle.
+ *
+ * @param stdClass $coursemodule The course module record.
+ * @return cached_cm_info|false
+ */
+function mediaspeler_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $mediaspeler = $DB->get_record('mediaspeler', ['id' => $coursemodule->instance],
+        'id, name, intro, introformat, completionlistenall');
+    if (!$mediaspeler) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $mediaspeler->name;
+
+    if ($coursemodule->showdescription) {
+        // Filters run at display time, not in the cached version.
+        $result->content = format_module_intro('mediaspeler', $mediaspeler, $coursemodule->id, false);
+    }
+
+    // Custom completion rules, only when completion is automatic.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionlistenall'] = (int) $mediaspeler->completionlistenall;
+    }
+
+    return $result;
+}
+
+/**
+ * Adds the "Manage items" page to the activity's secondary navigation.
+ *
+ * @param settings_navigation $settingsnav The settings navigation.
+ * @param navigation_node $node The node of this activity.
+ */
+function mediaspeler_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $node) {
+    $cm = $settingsnav->get_page()->cm;
+    if (!$cm || !has_capability('mod/mediaspeler:manageitems', $cm->context)) {
+        return;
+    }
+    $node->add(
+        get_string('manageitems', 'mediaspeler'),
+        new moodle_url('/mod/mediaspeler/items.php', ['id' => $cm->id]),
+        navigation_node::TYPE_SETTING,
+        null,
+        'mod_mediaspeler_items',
+        new pix_icon('i/edit', '')
+    );
 }
